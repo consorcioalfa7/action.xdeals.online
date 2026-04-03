@@ -1,0 +1,205 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+  --color-chart-5: var(--chart-5);
+  --color-chart-4: var(--chart-4);
+  --color-chart-3: var(--chart-3);
+  --color-chart-2: var(--chart-2);
+  --color-chart-1: var(--chart-1);
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-action: #FF6600;
+  --color-action-dark: #E65C00;
+  --color-action-light: #FF8533;
+  --color-action-secondary: #FFB800;
+  --color-action-accent: #00B341;
+  --color-action-danger: #E4002B;
+}
+
+:root {
+  --radius: 0.5rem;
+  --background: #FFFFFF;
+  --foreground: #1A1A1A;
+  --card: #FFFFFF;
+  --card-foreground: #1A1A1A;
+  --popover: #FFFFFF;
+  --popover-foreground: #1A1A1A;
+  --primary: #FF6600;
+  --primary-foreground: #FFFFFF;
+  --secondary: #FFF3E8;
+  --secondary-foreground: #1A1A1A;
+  --muted: #F5F5F5;
+  --muted-foreground: #666666;
+  --accent: #FF6600;
+  --accent-foreground: #FFFFFF;
+  --destructive: #E4002B;
+  --border: #E0E0E0;
+  --input: #E0E0E0;
+  --ring: #FF6600;
+  --chart-1: #FF6600;
+  --chart-2: #FFB800;
+  --chart-3: #00B341;
+  --chart-4: #0066CC;
+  --chart-5: #9B59B6;
+  --sidebar: #F5F5F5;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-primary: #FF6600;
+  --sidebar-primary-foreground: #FFFFFF;
+  --sidebar-accent: #FFF3E8;
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border: #E0E0E0;
+  --sidebar-ring: #FF6600;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ── Action-specific utility classes ──────────────────────────── */
+
+.action-gradient {
+  background: linear-gradient(135deg, #FF6600 0%, #FF8533 50%, #FFB800 100%);
+}
+
+.action-gradient-dark {
+  background: linear-gradient(135deg, #E65C00 0%, #FF6600 100%);
+}
+
+/* Product card hover effect */
+.product-card-hover {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.product-card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+/* Price badge */
+.price-badge {
+  background: linear-gradient(135deg, #00B341 0%, #008F33 100%);
+  color: white;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.875rem;
+}
+
+/* Sale badge */
+.sale-badge {
+  background: linear-gradient(135deg, #E4002B 0%, #C4001F 100%);
+  color: white;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+/* New badge */
+.new-badge {
+  background: linear-gradient(135deg, #0066CC 0%, #004C99 100%);
+  color: white;
+  font-weight: 700;
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+/* Mega menu styling */
+.mega-menu-item {
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+.mega-menu-item:hover {
+  background-color: #FFF3E8;
+  color: #FF6600;
+}
+
+/* Custom scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
+/* Smooth page transitions */
+.page-transition {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Banner carousel */
+.banner-slide {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: scale(1.02); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+/* Delivery banner */
+.delivery-banner {
+  background: repeating-linear-gradient(
+    90deg,
+    #FF6600 0px,
+    #FF6600 40px,
+    #FF8533 40px,
+    #FF8533 80px
+  );
+  background-size: 100% 4px;
+  background-repeat: no-repeat;
+  background-position: bottom;
+}

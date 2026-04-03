@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// ── Countries & Localization ──────────────────────────────────
+model Country {
+  id          String   @id @default(cuid())
+  code        String   @unique // "PT", "FR", "ES", "IT", "NL", "DE", "BE", "LU"
+  locale      String   @unique // "pt-PT", "fr-FR", "es-ES", "it-IT", "nl-NL", "de-DE", "fr-BE", "lb-LU"
+  name        String   // "Portugal", "France", etc.
+  flag        String   // emoji flag
+  currency    String   @default("EUR")
+  domain      String   // "action.xdeals.online"
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  categories CategoryProductCountry[]
+  translations ProductTranslation[]
+  banners Banner[]
+  orders Order[]
+  newsletters Newsletter[]
+  scraperLogs ScraperLog[]
+}
+
+// ── Categories ────────────────────────────────────────────────
+model Category {
+  id          String   @id @default(cuid())
+  slug        String   @unique
+  icon        String   // lucide icon name
+  sortOrder   Int      @default(0)
+  parentId    String?
+  parent      Category?        @relation("CategoryHierarchy", fields: [parentId], references: [id])
+  children    Category[]       @relation("CategoryHierarchy")
+  countryLinks CategoryProductCountry[]
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@index([parentId])
+}
+
+// ── Products ──────────────────────────────────────────────────
+model Product {
+  id            String       @id @default(cuid())
+  slug          String       @unique
+  sku           String       @unique
+  ean           String?      @unique
+  price         Float        // always in EUR
+  originalPrice Float?
+  isActive      Boolean      @default(true)
+  isFeatured    Boolean      @default(false)
+  isNew         Boolean      @default(false)
+  isOnSale      Boolean      @default(false)
+  stockCount    Int          @default(100)
+  images        String       // JSON array of image URLs
+  attributes    String?      // JSON object of product attributes
+  sortOrder     Int          @default(0)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  translations  ProductTranslation[]
+  categories    CategoryProductCountry[]
+  orderItems    OrderItem[]
+
+  @@index([slug])
+  @@index([sku])
+  @@index([isActive])
+  @@index([isFeatured])
+}
+
+// ── Product Translations ─────────────────────────────────────
+model ProductTranslation {
+  id          String   @id @default(cuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  countryId   String
+  country     Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  name        String
+  description String?
+  shortDesc   String?
+  metaTitle   String?
+  metaDesc    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([productId, countryId])
+  @@index([countryId])
+}
+
+// ── Category ↔ Product ↔ Country (many-to-many) ─────────────
+model CategoryProductCountry {
+  id          String   @id @default(cuid())
+  categoryId  String
+  category    Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  countryId   String
+  country     Country  @relation(fields: [countryId], references: [id], onDelete: Cascade)
+  sortOrder   Int      @default(0)
+
+  @@unique([categoryId, productId, countryId])
+  @@index([countryId])
+  @@index([categoryId])
+}
+
+// ── Banners / Promotions ─────────────────────────────────────
+model Banner {
+  id          String   @id @default(cuid())
+  title       String
+  subtitle    String?
+  image       String   // URL
+  link        String?  // internal or external link
+  position    String   @default("home") // "home", "category", "sidebar"
+  countryId   String?
+  country     Country? @relation(fields: [countryId], references: [id])
+  isActive    Boolean  @default(true)
+  sortOrder   Int      @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([position])
+  @@index([isActive])
+}
+
+// ── Orders ────────────────────────────────────────────────────
+model Order {
+  id              String   @id @default(cuid())
+  orderNumber     String   @unique
+  email           String
+  firstName       String
+  lastName        String
+  phone           String?
+  address         String
+  city            String
+  postalCode      String
+  countryId       String
+  country         Country  @relation(fields: [countryId], references: [id])
+  items           OrderItem[]
+  subtotal        Float
+  shippingCost    Float
+  total           Float
+  currency        String   @default("EUR")
+  status          String   @default("pending") // pending, paid, shipped, delivered, cancelled
+  nexflowxId      String?  // payment link ID from NeXFlowX
+  nexflowxUrl     String?  // shareable_url
+  paidAt          DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([status])
+  @@index([email])
+  @@index([createdAt])
+}
+
+// ── Order Items ───────────────────────────────────────────────
+model OrderItem {
+  id          String   @id @default(cuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  productName String
+  productSku  String
+  price       Float
+  quantity    Int
+  createdAt   DateTime @default(now())
+
+  @@index([orderId])
+}
+
+// ── Newsletter ────────────────────────────────────────────────
+model Newsletter {
+  id          String   @id @default(cuid())
+  email       String   @unique
+  countryId   String?
+  country     Country? @relation(fields: [countryId], references: [id])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  @@index([email])
+}
+
+// ── Scraper Logs ──────────────────────────────────────────────
+model ScraperLog {
+  id          String   @id @default(cuid())
+  countryId   String
+  country     Country  @relation(fields: [countryId], references: [id])
+  url         String
+  status      String   // "success", "error", "partial"
+  productsFound Int     @default(0)
+  error       String?
+  durationMs  Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([countryId])
+  @@index([status])
+  @@index([createdAt])
+}
