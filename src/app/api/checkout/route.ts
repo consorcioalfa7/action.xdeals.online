@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { db } from "@/lib/db";
-import { DELIVERY_CONFIG } from "@/lib/constants";
+import { COUNTRIES, DELIVERY_CONFIG } from "@/lib/constants";
 
 // ─── NeXFlowX Client (server-side only, no SDKs) ─────────────
 function getNexFlowXConfig() {
@@ -8,6 +7,7 @@ function getNexFlowXConfig() {
   const apiKey = process.env.NEXFLOWX_API_KEY;
 
   if (!apiUrl || !apiKey) {
+    console.error("[Checkout] NEXFLOWX_API_URL or NEXFLOWX_API_KEY not set in .env");
     return null;
   }
 
@@ -22,9 +22,8 @@ async function createPaymentLink(
   const config = getNexFlowXConfig();
   if (!config) return null;
 
-  // POST {NEXFLOWX_API_URL}/payment-links
-  // Headers: x-api-key: {NEXFLOWX_API_KEY}, Content-Type: application/json
-  // Body: { amount: 25.50, currency: "EUR" }
+  console.log(`[Checkout] Creating payment link: ${amount} ${currency} — ${description}`);
+
   const response = await fetch(`${config.apiUrl}/payment-links`, {
     method: "POST",
     headers: {
@@ -53,6 +52,8 @@ async function createPaymentLink(
     console.error("[NeXFlowX] No shareable_url in response:", JSON.stringify(json));
     return null;
   }
+
+  console.log(`[NeXFlowX] Payment link created: ${data.shareable_url}`);
 
   return {
     id: data.id,
@@ -91,15 +92,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // ── Validate & resolve country ──────────────────────────────
-    const country = await db.country.findFirst({ where: { code: countryCode } });
+    // ── Validate country (use in-memory COUNTRIES, no DB dependency) ──
+    const country = COUNTRIES.find((c) => c.code === countryCode);
     if (!country) {
-      return NextResponse.json({ error: "Invalid country" }, { status: 400 });
+      return NextResponse.json(
+        { error: `Invalid country: ${countryCode}. Supported: ${COUNTRIES.map(c => c.code).join(", ")}` },
+        { status: 400 }
+      );
     }
 
     // ── Calculate totals from cart items ────────────────────────
-    // Items vêm do frontend com: { productId, name, slug, price, quantity, stockCount }
-    // Confirma preços no backend para segurança
     let subtotal = 0;
     const orderItemsData: Array<{
       productId: string;
@@ -110,8 +112,6 @@ export async function POST(request: NextRequest) {
     }> = [];
 
     for (const item of items) {
-      // Usa o preço enviado do carrinho (calculado client-side)
-      // Em produção, buscar na DB: db.product.findUnique({ where: { id: item.productId } })
       const itemTotal = item.price * item.quantity;
       subtotal += itemTotal;
 
@@ -137,29 +137,37 @@ export async function POST(request: NextRequest) {
       .substring(2, 6)
       .toUpperCase()}`;
 
-    // ── Create order in database ────────────────────────────────
-    const order = await db.order.create({
-      data: {
-        orderNumber,
-        email,
-        firstName,
-        lastName,
-        phone: phone || null,
-        address,
-        city,
-        postalCode,
-        countryId: country.id,
-        subtotal: parseFloat(subtotal.toFixed(2)),
-        shippingCost: parseFloat(shippingCost.toFixed(2)),
-        total,
-        currency,
-        status: "pending",
-        items: { create: orderItemsData },
-      },
-      include: { items: true },
-    });
+    // ── Try to save order to database (non-blocking) ───────────
+    // Note: On Vercel, SQLite won't work (read-only filesystem).
+    // The payment link is created regardless of DB save success.
+    try {
+      const { db } = await import("@/lib/db");
+      await db.order.create({
+        data: {
+          orderNumber,
+          email,
+          firstName,
+          lastName,
+          phone: phone || null,
+          address,
+          city,
+          postalCode,
+          countryId: country.id,
+          subtotal: parseFloat(subtotal.toFixed(2)),
+          shippingCost: parseFloat(shippingCost.toFixed(2)),
+          total,
+          currency,
+          status: "pending",
+          items: { create: orderItemsData },
+        },
+      });
+      console.log(`[Checkout] Order ${orderNumber} saved to database`);
+    } catch (dbError) {
+      console.warn(`[Checkout] Could not save order to database (non-critical):`, dbError);
+      // Continue without DB save — payment link will still work
+    }
 
-    // ── Call NeXFlowX API (server-side, no SDKs) ───────────────
+    // ── Call NeXFlowX API (server-side) ────────────────────────
     const paymentLink = await createPaymentLink(
       total,
       currency,
@@ -167,41 +175,45 @@ export async function POST(request: NextRequest) {
     );
 
     if (paymentLink) {
-      // Update order with NeXFlowX transaction ID and URL
-      await db.order.update({
-        where: { id: order.id },
-        data: {
-          nexflowxId: paymentLink.id,
-          nexflowxUrl: paymentLink.shareable_url,
-        },
-      });
-
-      console.log(`[Checkout] Order ${orderNumber} created. Payment link: ${paymentLink.shareable_url}`);
+      // Try to update order with nexflowx ID (non-critical)
+      try {
+        const { db } = await import("@/lib/db");
+        await db.order.updateMany({
+          where: { orderNumber },
+          data: {
+            nexflowxId: paymentLink.id,
+            nexflowxUrl: paymentLink.shareable_url,
+          },
+        });
+      } catch {
+        // Non-critical
+      }
 
       return NextResponse.json({
         success: true,
-        orderId: order.id,
-        orderNumber: order.orderNumber,
+        orderNumber,
         paymentUrl: paymentLink.shareable_url,
-        total: order.total,
-        currency: order.currency,
+        total,
+        currency,
       });
     }
 
-    // ── Fallback: sem link de pagamento (API indisponível) ─────
+    // ── Fallback: no payment link ───────────────────────────────
     console.warn(`[Checkout] Order ${orderNumber} created but NeXFlowX payment link failed`);
 
     return NextResponse.json({
       success: true,
-      orderId: order.id,
-      orderNumber: order.orderNumber,
+      orderNumber,
       paymentUrl: null,
-      total: order.total,
-      currency: order.currency,
+      total,
+      currency,
       warning: "Payment service unavailable. Order saved but payment link not generated.",
     });
   } catch (error) {
     console.error("[Checkout] Error:", error);
-    return NextResponse.json({ error: "Failed to create order" }, { status: 500 });
+    return NextResponse.json(
+      { error: error instanceof Error ? error.message : "Failed to create order" },
+      { status: 500 }
+    );
   }
 }

@@ -91,8 +91,6 @@ export default function RootLayout({
   return (
     <html lang="pt-PT" suppressHydrationWarning>
       <head>
-        {/* NeXFlowX SDK for checkout */}
-        <script src="https://api.nexflowx.tech/sdk.js" defer />
         {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"

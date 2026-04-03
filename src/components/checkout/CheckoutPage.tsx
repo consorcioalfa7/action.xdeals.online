@@ -1,18 +1,25 @@
 'use client';
 
-import { useState } from 'react';
-import { ArrowLeft, CreditCard, Lock, Loader2, AlertCircle, CheckCircle2, ExternalLink } from 'lucide-react';
+import { useState, useRef, useEffect, useCallback } from 'react';
+import { ArrowLeft, CreditCard, Lock, Loader2, AlertCircle, CheckCircle2, ExternalLink, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Separator } from '@/components/ui/separator';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useCartStore, useLocaleStore, useNavStore } from '@/lib/store';
-import { DELIVERY_CONFIG } from '@/lib/constants';
+import { DELIVERY_CONFIG, COUNTRIES } from '@/lib/constants';
 import Breadcrumb from '../shared/Breadcrumb';
 import type { CheckoutFormData } from '@/lib/types';
 
-type Step = 'form' | 'processing' | 'redirecting' | 'error';
+type Step = 'form' | 'processing' | 'payment' | 'success' | 'error';
 
 export default function CheckoutPage() {
   const navigate = useNavStore(s => s.navigate);
@@ -36,13 +43,37 @@ export default function CheckoutPage() {
   const [paymentUrl, setPaymentUrl] = useState('');
   const [orderNumber, setOrderNumber] = useState('');
 
+  const popupRef = useRef<Window | null>(null);
+  const checkIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const subtotal = getSubtotal();
   const shipping = getShippingCost();
   const total = getTotal();
 
-  // Redirect back from payment? Show success
-  const isBackFromPayment = typeof window !== 'undefined'
-    && new URLSearchParams(window.location.search).get('payment') === 'success';
+  // ── Cleanup popup listener on unmount ─────────────────────
+  useEffect(() => {
+    return () => {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+      }
+      if (popupRef.current && !popupRef.current.closed) {
+        popupRef.current.close();
+      }
+    };
+  }, []);
+
+  // ── Listen for popup close to detect payment result ───────
+  const checkPopupClosed = useCallback(() => {
+    if (popupRef.current?.closed) {
+      if (checkIntervalRef.current) {
+        clearInterval(checkIntervalRef.current);
+        checkIntervalRef.current = null;
+      }
+      // User closed popup — go back to form to retry
+      setStep('form');
+      setErrorMsg('A janela de pagamento foi fechada. Tente novamente.');
+    }
+  }, []);
 
   const updateField = (field: keyof CheckoutFormData, value: string) => {
     setForm(prev => ({ ...prev, [field]: value }));
@@ -57,6 +88,7 @@ export default function CheckoutPage() {
     if (!form.address) newErrors.address = 'Campo obrigatório';
     if (!form.city) newErrors.city = 'Campo obrigatório';
     if (!form.postalCode) newErrors.postalCode = 'Campo obrigatório';
+    if (!form.country) newErrors.country = 'Selecione um país';
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -106,31 +138,71 @@ export default function CheckoutPage() {
         throw new Error(data.error || 'Erro ao criar pedido');
       }
 
-      // ── Backend devolve: { paymentUrl, orderNumber, total } ──
+      // ── Has payment URL → open in popup ────────────────────
       if (data.paymentUrl) {
-        // ── Tem link de pagamento → redirecionar ────────────
         setOrderNumber(data.orderNumber);
         setPaymentUrl(data.paymentUrl);
-        setStep('redirecting');
+        setStep('payment');
 
-        // Redireciona para o shareable_url da NeXFlowX
-        window.location.href = data.paymentUrl;
+        // Open NeXFlowX hosted checkout in a popup window
+        const popupWidth = Math.min(500, window.innerWidth - 40);
+        const popupHeight = Math.min(700, window.innerHeight - 40);
+        const left = (window.innerWidth - popupWidth) / 2;
+        const top = (window.innerHeight - popupHeight) / 2;
+
+        popupRef.current = window.open(
+          data.paymentUrl,
+          'nexflowx-payment',
+          `width=${popupWidth},height=${popupHeight},left=${left},top=${top},scrollbars=yes,resizable=yes`
+        );
+
+        // If popup was blocked by browser, fallback to new tab
+        if (!popupRef.current || popupRef.current.closed) {
+          popupRef.current = window.open(data.paymentUrl, '_blank');
+        }
+
+        // Poll popup closed status
+        if (popupRef.current) {
+          checkIntervalRef.current = setInterval(checkPopupClosed, 1000);
+        }
       } else if (data.warning) {
-        // API de pagamentos indisponível
         setErrorMsg(data.warning);
         setStep('error');
       } else {
-        // Pedido criado sem pagamento (fallback)
+        // No payment link (fallback)
         setOrderNumber(data.orderNumber);
         clearCart();
-        setStep('redirecting');
-        setTimeout(() => navigate('home'), 2000);
+        setStep('success');
       }
     } catch (err) {
       console.error('[Checkout] Error:', err);
       setErrorMsg(err instanceof Error ? err.message : 'Erro ao processar o pedido');
       setStep('error');
     }
+  };
+
+  const handlePopupClosedManually = () => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close();
+    }
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+    setStep('form');
+    setErrorMsg('Pagamento cancelado. Tente novamente.');
+  };
+
+  const handlePaymentSuccess = () => {
+    if (popupRef.current && !popupRef.current.closed) {
+      popupRef.current.close();
+    }
+    if (checkIntervalRef.current) {
+      clearInterval(checkIntervalRef.current);
+      checkIntervalRef.current = null;
+    }
+    clearCart();
+    setStep('success');
   };
 
   // ── Labels (multilíngue) ────────────────────────────────────
@@ -145,7 +217,8 @@ export default function CheckoutPage() {
     address: { "pt-PT": "Morada", "fr-FR": "Adresse", "es-ES": "Dirección", "de-DE": "Adresse", "nl-NL": "Adres", "pt-BR": "Endereço" },
     city: { "pt-PT": "Cidade", "fr-FR": "Ville", "es-ES": "Ciudad", "de-DE": "Stadt", "nl-NL": "Stad", "pt-BR": "Cidade" },
     postalCode: { "pt-PT": "Código Postal", "fr-FR": "Code postal", "es-ES": "Código postal", "de-DE": "PLZ", "nl-NL": "Postcode", "pt-BR": "CEP" },
-    countryLbl: { "pt-PT": "País", "fr-FR": "Pays", "es-ES": "País", "de-DE": "Land", "nl-NL": "Land", "pt-BR": "País" },
+    countryLbl: { "pt-PT": "País de Entrega", "fr-FR": "Pays de livraison", "es-ES": "País de envío", "de-DE": "Lieferland", "nl-NL": "Bezorgland", "pt-BR": "País de Entrega" },
+    selectCountry: { "pt-PT": "Selecione o país", "fr-FR": "Sélectionnez le pays", "es-ES": "Seleccione el país", "de-DE": "Land auswählen", "nl-NL": "Selecteer land", "pt-BR": "Selecione o país" },
     subtotal: { "pt-PT": "Subtotal", "fr-FR": "Sous-total", "es-ES": "Subtotal", "de-DE": "Zwischensumme", "nl-NL": "Subtotaal", "pt-BR": "Subtotal" },
     shipping: { "pt-PT": "Envio", "fr-FR": "Livraison", "es-ES": "Envío", "de-DE": "Versand", "nl-NL": "Bezorging", "pt-BR": "Frete" },
     free: { "pt-PT": "Grátis", "fr-FR": "Gratuit", "es-ES": "Gratis", "de-DE": "Kostenlos", "nl-NL": "Gratis", "pt-BR": "Grátis" },
@@ -154,16 +227,24 @@ export default function CheckoutPage() {
     secure: { "pt-PT": "Pagamento seguro processado por NeXFlowX", "fr-FR": "Paiement sécurisé via NeXFlowX", "es-ES": "Pago seguro via NeXFlowX", "de-DE": "Sichere Zahlung via NeXFlowX", "nl-NL": "Veilige betaling via NeXFlowX", "pt-BR": "Pagamento seguro via NeXFlowX" },
     terms: { "pt-PT": "Li e aceito os Termos e Condições", "fr-FR": "J'ai lu et j'accepte les CGV", "es-ES": "He leído y acepto los Términos", "de-DE": "AGB gelesen und akzeptiert", "nl-NL": "Voorwaarden gelezen en akkoord", "pt-BR": "Li e aceito os Termos e Condições" },
     processing: { "pt-PT": "A criar o seu pedido...", "fr-FR": "Création de votre commande...", "es-ES": "Creando su pedido...", "de-DE": "Bestellung wird erstellt...", "nl-NL": "Bestelling wordt gemaakt...", "pt-BR": "Criando seu pedido..." },
-    redirecting: { "pt-PT": "A redirecionar para o pagamento seguro...", "fr-FR": "Redirection vers le paiement sécurisé...", "es-ES": "Redirigiendo al pago seguro...", "de-DE": "Weiterleitung zur sicheren Zahlung...", "nl-NL": "Doorsturen naar veilige betaling...", "pt-BR": "Redirecionando para o pagamento..." },
+    paymentTitle: { "pt-PT": "Pagamento em curso", "fr-FR": "Paiement en cours", "es-ES": "Pago en curso", "de-DE": "Zahlung läuft", "nl-NL": "Betaling bezig", "pt-BR": "Pagamento em andamento" },
+    paymentDesc: { "pt-PT": "Complete o pagamento na janela aberta. Não feche esta página.", "fr-FR": "Complétez le paiement dans la fenêtre ouverte.", "es-ES": "Complete el pago en la ventana abierta.", "de-DE": "Schließen Sie die Zahlung im geöffneten Fenster ab.", "nl-NL": "Voltooi de betaling in het geopende venster.", "pt-BR": "Complete o pagamento na janela aberta." },
+    cancelPayment: { "pt-PT": "Cancelar Pagamento", "fr-FR": "Annuler le paiement", "es-ES": "Cancelar pago", "de-DE": "Zahlung abbrechen", "nl-NL": "Betaling annuleren", "pt-BR": "Cancelar Pagamento" },
+    confirmPayment: { "pt-PT": "Já paguei", "fr-FR": "J'ai payé", "es-ES": "Ya pagué", "de-DE": "Ich habe bezahlt", "nl-NL": "Ik heb betaald", "pt-BR": "Já paguei" },
+    openAgain: { "pt-PT": "Abrir janela de pagamento novamente", "fr-FR": "Rouvrir la fenêtre de paiement", "es-ES": "Abrir ventana de pago otra vez", "de-DE": "Zahlungsfenster erneut öffnen", "nl-NL": "Betaalvenster opnieuw openen", "pt-BR": "Abrir janela de pagamento novamente" },
+    successTitle: { "pt-PT": "Pedido Confirmado!", "fr-FR": "Commande Confirmée!", "es-ES": "¡Pedido Confirmado!", "de-DE": "Bestellung Bestätigt!", "nl-NL": "Bestelling Bevestigd!", "pt-BR": "Pedido Confirmado!" },
+    successDesc: { "pt-PT": "O seu pedido foi processado com sucesso. Receberá um email de confirmação em breve.", "fr-FR": "Votre commande a été traitée avec succès.", "es-ES": "¡Su pedido ha sido procesado con éxito!", "de-DE": "Ihre Bestellung wurde erfolgreich verarbeitet.", "nl-NL": "Uw bestelling is succesvol verwerkt.", "pt-BR": "Seu pedido foi processado com sucesso!" },
+    continueShopping: { "pt-PT": "Continuar as Compras", "fr-FR": "Continuer les achats", "es-ES": "Seguir Comprando", "de-DE": "Weiter einkaufen", "nl-NL": "Verder winkelen", "pt-BR": "Continuar as Compras" },
     back: { "pt-PT": "Voltar", "fr-FR": "Retour", "es-ES": "Volver", "de-DE": "Zurück", "nl-NL": "Terug", "pt-BR": "Voltar" },
     retry: { "pt-PT": "Tentar novamente", "fr-FR": "Réessayer", "es-ES": "Reintentar", "de-DE": "Erneut versuchen", "nl-NL": "Opnieuw proberen", "pt-BR": "Tentar novamente" },
     orderCreated: { "pt-PT": "Pedido criado com sucesso!", "fr-FR": "Commande créée!", "es-ES": "¡Pedido creado!", "de-DE": "Bestellung erstellt!", "nl-NL": "Bestelling geplaatst!", "pt-BR": "Pedido criado!" },
+    dontClose: { "pt-PT": "Não feche esta página enquanto a janela de pagamento estiver aberta.", "fr-FR": "Ne fermez pas cette page pendant le paiement.", "es-ES": "No cierre esta página mientras la ventana de pago esté abierta.", "de-DE": "Schließen Sie diese Seite nicht während der Zahlung.", "nl-NL": "Sluit deze pagina niet tijdens de betaling.", "pt-BR": "Não feche esta página enquanto a janela de pagamento estiver aberta." },
   };
 
   const t = (key: string) => labels[key]?.[locale] || labels[key]?.['pt-PT'] || key;
 
-  // ── Render: Processing / Redirecting state ─────────────────
-  if (step === 'processing' || step === 'redirecting') {
+  // ── Render: Processing state ───────────────────────────────
+  if (step === 'processing') {
     return (
       <div className="page-transition">
         <div className="container mx-auto px-4 py-16 max-w-md text-center">
@@ -171,23 +252,114 @@ export default function CheckoutPage() {
             <div className="h-16 w-16 rounded-full bg-orange-100 flex items-center justify-center">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
-            <h2 className="text-xl font-bold">{step === 'processing' ? t('processing') : t('redirecting')}</h2>
-            <p className="text-sm text-muted-foreground">
-              {orderNumber && `Pedido: ${orderNumber}`}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              Não feche esta janela. Será redirecionado para o pagamento seguro.
-            </p>
-            {paymentUrl && (
-              <a
-                href={paymentUrl}
-                target="_self"
-                className="inline-flex items-center gap-2 mt-4 text-sm text-primary hover:underline"
-              >
-                <ExternalLink className="h-4 w-4" />
-                Clique aqui se não for redirecionado automaticamente
-              </a>
+            <h2 className="text-xl font-bold">{t('processing')}</h2>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Render: Payment popup state ────────────────────────────
+  if (step === 'payment') {
+    return (
+      <div className="page-transition">
+        <div className="container mx-auto px-4 py-16 max-w-md text-center">
+          <div className="bg-white border rounded-xl p-8 shadow-sm">
+            <div className="flex flex-col items-center gap-4">
+              {/* Animated payment icon */}
+              <div className="h-20 w-20 rounded-full bg-orange-50 border-2 border-orange-200 flex items-center justify-center animate-pulse">
+                <CreditCard className="h-10 w-10 text-primary" />
+              </div>
+
+              <h2 className="text-xl font-bold">{t('paymentTitle')}</h2>
+              <p className="text-sm text-muted-foreground">{t('dontClose')}</p>
+
+              {orderNumber && (
+                <div className="bg-gray-50 rounded-lg px-4 py-2 w-full">
+                  <p className="text-xs text-muted-foreground">Pedido</p>
+                  <p className="text-sm font-mono font-bold">{orderNumber}</p>
+                  <p className="text-lg font-bold text-primary mt-1">
+                    {formatPrice(total)} {currency}
+                  </p>
+                </div>
+              )}
+
+              {/* Countdown / Status message */}
+              <div className="w-full bg-blue-50 border border-blue-100 rounded-lg p-3">
+                <p className="text-sm text-blue-700">
+                  ⏳ {t('paymentDesc')}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex flex-col gap-3 w-full mt-4">
+                <Button
+                  onClick={() => {
+                    // Re-open popup if closed
+                    if (!popupRef.current || popupRef.current.closed) {
+                      const pw = Math.min(500, window.innerWidth - 40);
+                      const ph = Math.min(700, window.innerHeight - 40);
+                      const l = (window.innerWidth - pw) / 2;
+                      const t2 = (window.innerHeight - ph) / 2;
+                      popupRef.current = window.open(
+                        paymentUrl,
+                        'nexflowx-payment',
+                        `width=${pw},height=${ph},left=${l},top=${t2},scrollbars=yes,resizable=yes`
+                      );
+                      if (popupRef.current) {
+                        checkIntervalRef.current = setInterval(checkPopupClosed, 1000);
+                      }
+                    }
+                  }}
+                  variant="outline"
+                  className="w-full"
+                >
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  {t('openAgain')}
+                </Button>
+
+                <Button
+                  onClick={handlePaymentSuccess}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white"
+                >
+                  <CheckCircle2 className="mr-2 h-4 w-4" />
+                  {t('confirmPayment')}
+                </Button>
+
+                <Button
+                  onClick={handlePopupClosedManually}
+                  variant="ghost"
+                  className="w-full text-muted-foreground"
+                >
+                  {t('cancelPayment')}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Render: Success state ──────────────────────────────────
+  if (step === 'success') {
+    return (
+      <div className="page-transition">
+        <div className="container mx-auto px-4 py-16 max-w-md text-center">
+          <div className="flex flex-col items-center gap-4">
+            <div className="h-20 w-20 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle2 className="h-10 w-10 text-green-600" />
+            </div>
+            <h2 className="text-2xl font-bold text-green-700">{t('successTitle')}</h2>
+            <p className="text-sm text-muted-foreground">{t('successDesc')}</p>
+            {orderNumber && (
+              <p className="text-sm font-mono bg-gray-50 px-4 py-2 rounded-lg">
+                Pedido: {orderNumber}
+              </p>
             )}
+            <Button onClick={() => navigate('home')} className="mt-4">
+              {t('continueShopping')}
+            </Button>
           </div>
         </div>
       </div>
@@ -242,6 +414,7 @@ export default function CheckoutPage() {
               <h2 className="text-lg font-semibold mb-6">{t('shippingInfo')}</h2>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Email */}
                 <div className="sm:col-span-2">
                   <Label htmlFor="email">{t('email')} <span className="text-red-500">*</span></Label>
                   <Input
@@ -255,6 +428,7 @@ export default function CheckoutPage() {
                   {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
                 </div>
 
+                {/* First Name */}
                 <div>
                   <Label htmlFor="firstName">{t('firstName')} <span className="text-red-500">*</span></Label>
                   <Input
@@ -266,6 +440,7 @@ export default function CheckoutPage() {
                   {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
                 </div>
 
+                {/* Last Name */}
                 <div>
                   <Label htmlFor="lastName">{t('lastName')} <span className="text-red-500">*</span></Label>
                   <Input
@@ -277,6 +452,7 @@ export default function CheckoutPage() {
                   {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
                 </div>
 
+                {/* Phone */}
                 <div className="sm:col-span-2">
                   <Label htmlFor="phone">{t('phone')}</Label>
                   <Input
@@ -289,6 +465,7 @@ export default function CheckoutPage() {
                   />
                 </div>
 
+                {/* Address */}
                 <div className="sm:col-span-2">
                   <Label htmlFor="address">{t('address')} <span className="text-red-500">*</span></Label>
                   <Input
@@ -301,6 +478,7 @@ export default function CheckoutPage() {
                   {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
                 </div>
 
+                {/* City */}
                 <div>
                   <Label htmlFor="city">{t('city')} <span className="text-red-500">*</span></Label>
                   <Input
@@ -312,6 +490,7 @@ export default function CheckoutPage() {
                   {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                 </div>
 
+                {/* Postal Code */}
                 <div>
                   <Label htmlFor="postalCode">{t('postalCode')} <span className="text-red-500">*</span></Label>
                   <Input
@@ -323,13 +502,28 @@ export default function CheckoutPage() {
                   {errors.postalCode && <p className="text-xs text-red-500 mt-1">{errors.postalCode}</p>}
                 </div>
 
-                <div>
-                  <Label>{t('countryLbl')}</Label>
-                  <Input
-                    value={`${country.flag} ${country.name}`}
-                    disabled
-                    className="mt-1 bg-gray-50"
-                  />
+                {/* Country - EDITABLE dropdown */}
+                <div className="sm:col-span-2">
+                  <Label className="flex items-center gap-1.5">
+                    <Globe className="h-3.5 w-3.5 text-muted-foreground" />
+                    {t('countryLbl')} <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={form.country}
+                    onValueChange={(val) => updateField('country', val)}
+                  >
+                    <SelectTrigger className={`mt-1 ${errors.country ? 'border-red-500' : ''}`}>
+                      <SelectValue placeholder={t('selectCountry')} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {COUNTRIES.filter(c => c.isActive).map(c => (
+                        <SelectItem key={c.code} value={c.code}>
+                          {c.flag} {c.name} ({c.currency})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.country && <p className="text-xs text-red-500 mt-1">{errors.country}</p>}
                 </div>
               </div>
 
