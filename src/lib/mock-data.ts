@@ -13,7 +13,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 150,
-    images: [{ url: "", alt: "Azeite Extra Virgem" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Az", alt: "Azeite Extra Virgem" }],
     attributes: [
       { name: "Capacity", value: "750ml" },
       { name: "Origin", value: "Grécia" },
@@ -42,7 +42,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 300,
-    images: [{ url: "", alt: "Detergente Líquido" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=De", alt: "Detergente Líquido" }],
     attributes: [
       { name: "Capacity", value: "2L" },
       { name: "Scent", value: "Lavanda" },
@@ -71,7 +71,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 75,
-    images: [{ url: "", alt: "Kit de Ferramentas" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ki", alt: "Kit de Ferramentas" }],
     attributes: [
       { name: "Pieces", value: "45" },
       { name: "Material", value: "Aço Carbono" },
@@ -100,7 +100,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 60,
-    images: [{ url: "", alt: "Conjunto de Toalhas" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Co", alt: "Conjunto de Toalhas" }],
     attributes: [
       { name: "Pieces", value: "3" },
       { name: "Material", value: "Algodão 100%" },
@@ -129,7 +129,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 200,
-    images: [{ url: "", alt: "Fertilizante" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Fe", alt: "Fertilizante" }],
     attributes: [
       { name: "Weight", value: "5kg" },
       { name: "Type", value: "Universal" },
@@ -158,7 +158,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 120,
-    images: [{ url: "", alt: "Ração para Cão" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ra%C3%A7%C3%A3o", alt: "Ração para Cão" }],
     attributes: [
       { name: "Weight", value: "3kg" },
       { name: "Animal", value: "Cão Adulto" },
@@ -187,7 +187,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 500,
-    images: [{ url: "", alt: "Shampoo Sólido" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Sh", alt: "Shampoo Sólido" }],
     attributes: [
       { name: "Weight", value: "85g" },
       { name: "Ingredient", value: "Óleo de Argan" },
@@ -216,7 +216,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: true,
     stockCount: 180,
-    images: [{ url: "", alt: "Kit Escolar" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=KE", alt: "Kit Escolar" }],
     attributes: [
       { name: "Pieces", value: "12" },
       { name: "Type", value: "Material Escolar" },
@@ -245,7 +245,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 90,
-    images: [{ url: "", alt: "Puzzle 1000 Peças" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Pu", alt: "Puzzle 1000 Peças" }],
     attributes: [
       { name: "Pieces", value: "1000" },
       { name: "Theme", value: "Paisagem" },
@@ -274,7 +274,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 250,
-    images: [{ url: "", alt: "Camisola de Algodão" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ca", alt: "Camisola de Algodão" }],
     attributes: [
       { name: "Material", value: "Algodão 100%" },
       { name: "Sizes", value: "S, M, L, XL, XXL" },
@@ -303,7 +303,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 350,
-    images: [{ url: "", alt: "Velas Aromáticas" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ve", alt: "Velas Aromáticas" }],
     attributes: [
       { name: "Pieces", value: "6" },
       { name: "Burn Time", value: "4h cada" },
@@ -332,7 +332,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 80,
-    images: [{ url: "", alt: "Conjunto de Talheres" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=CT", alt: "Conjunto de Talheres" }],
     attributes: [
       { name: "Pieces", value: "24" },
       { name: "Material", value: "Aço Inox 18/10" },
@@ -361,7 +361,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 200,
-    images: [{ url: "", alt: "Martelo de Carpinteiro" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ma", alt: "Martelo de Carpinteiro" }],
     attributes: [
       { name: "Weight", value: "300g" },
       { name: "Material", value: "Aço + Fibra de Vidro" },
@@ -390,7 +390,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 110,
-    images: [{ url: "", alt: "Organizador de Gavetas" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Or", alt: "Organizador de Gavetas" }],
     attributes: [
       { name: "Drawers", value: "3" },
       { name: "Material", value: "Plástico" },
@@ -419,7 +419,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 1000,
-    images: [{ url: "", alt: "Sacos de Lixo" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Sa", alt: "Sacos de Lixo" }],
     attributes: [
       { name: "Quantity", value: "30 unidades" },
       { name: "Capacity", value: "50L" },
@@ -448,7 +448,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 400,
-    images: [{ url: "", alt: "Sumo de Laranja" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Su", alt: "Sumo de Laranja" }],
     attributes: [
       { name: "Capacity", value: "1L" },
       { name: "Type", value: "100% Sumo Natural" },
@@ -477,7 +477,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 150,
-    images: [{ url: "", alt: "Lâmpada LED" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Le", alt: "Lâmpada LED" }],
     attributes: [
       { name: "Power", value: "5W" },
       { name: "Equivalent", value: "40W incandescente" },
@@ -506,7 +506,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 180,
-    images: [{ url: "", alt: "Almofada Decorativa" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Al", alt: "Almofada Decorativa" }],
     attributes: [
       { name: "Size", value: "45x45cm" },
       { name: "Material", value: "Poliéester/Microfibra" },
@@ -535,7 +535,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 95,
-    images: [{ url: "", alt: "Tinta para Parede" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ti", alt: "Tinta para Parede" }],
     attributes: [
       { name: "Capacity", value: "2.5L" },
       { name: "Coverage", value: "~25m²" },
@@ -564,7 +564,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 300,
-    images: [{ url: "", alt: "Set Tupperware" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Se", alt: "Set Tupperware" }],
     attributes: [
       { name: "Pieces", value: "5" },
       { name: "Material", value: "Plástico BPA-free" },
@@ -593,7 +593,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: true,
     stockCount: 65,
-    images: [{ url: "", alt: "Cobertor Microfibra" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Co", alt: "Cobertor Microfibra" }],
     attributes: [
       { name: "Size", value: "150x200cm" },
       { name: "Material", value: "Microfibra 280g/m²" },
@@ -622,7 +622,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 140,
-    images: [{ url: "", alt: "Sapatilha de Desporto" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Sa", alt: "Sapatilha de Desporto" }],
     attributes: [
       { name: "Sizes", value: "36-45" },
       { name: "Material", value: "Malha/Rede" },
@@ -651,7 +651,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: false,
     isOnSale: false,
     stockCount: 600,
-    images: [{ url: "", alt: "Chocolate ao Leite" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Ch", alt: "Chocolate ao Leite" }],
     attributes: [
       { name: "Weight", value: "200g" },
       { name: "Type", value: "Chocolate ao Leite" },
@@ -680,7 +680,7 @@ export const MOCK_PRODUCTS: Product[] = [
     isNew: true,
     isOnSale: false,
     stockCount: 220,
-    images: [{ url: "", alt: "Vaso Cerâmica" }],
+    images: [{ url: "https://placehold.co/400x500/f97316/ffffff?text=Va", alt: "Vaso Cerâmica" }],
     attributes: [
       { name: "Diameter", value: "12cm" },
       { name: "Material", value: "Cerâmica com furo de drenagem" },

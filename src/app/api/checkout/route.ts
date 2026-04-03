@@ -79,27 +79,15 @@ export async function POST(request: NextRequest) {
       currency = "EUR",
     } = body;
 
-    // ── Validate required fields ────────────────────────────────
-    if (!email || !firstName || !lastName || !address || !city || !postalCode || !countryCode || !items?.length) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
-
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Invalid email address" }, { status: 400 });
-    }
-
-    if (items.length === 0) {
+    // ── Validate: only items are required, all other fields optional ──
+    if (!items?.length) {
       return NextResponse.json({ error: "Cart is empty" }, { status: 400 });
     }
 
-    // ── Validate country (use in-memory COUNTRIES, no DB dependency) ──
-    const country = COUNTRIES.find((c) => c.code === countryCode);
-    if (!country) {
-      return NextResponse.json(
-        { error: `Invalid country: ${countryCode}. Supported: ${COUNTRIES.map(c => c.code).join(", ")}` },
-        { status: 400 }
-      );
-    }
+    // ── Resolve country (optional — defaults to first available) ──
+    const country = countryCode
+      ? COUNTRIES.find((c) => c.code === countryCode) || COUNTRIES[0]
+      : COUNTRIES[0];
 
     // ── Calculate totals from cart items ────────────────────────
     let subtotal = 0;

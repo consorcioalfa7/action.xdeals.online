@@ -81,24 +81,17 @@ export default function CheckoutPage() {
   };
 
   const validate = (): boolean => {
-    const newErrors: Partial<Record<keyof CheckoutFormData, string>> = {};
-    if (!form.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) newErrors.email = 'Email inválido';
-    if (!form.firstName) newErrors.firstName = 'Campo obrigatório';
-    if (!form.lastName) newErrors.lastName = 'Campo obrigatório';
-    if (!form.address) newErrors.address = 'Campo obrigatório';
-    if (!form.city) newErrors.city = 'Campo obrigatório';
-    if (!form.postalCode) newErrors.postalCode = 'Campo obrigatório';
-    if (!form.country) newErrors.country = 'Selecione um país';
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    // All fields optional — only soft validation
+    if (form.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) {
+      setErrors({ email: 'Email inválido' });
+      return false;
+    }
+    setErrors({});
+    return true;
   };
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    if (!terms) {
-      setErrorMsg('Deve aceitar os Termos e Condições');
-      return;
-    }
     if (items.length === 0) {
       setErrorMsg('O carrinho está vazio');
       return;
@@ -416,38 +409,38 @@ export default function CheckoutPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {/* Email */}
                 <div className="sm:col-span-2">
-                  <Label htmlFor="email">{t('email')} <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="email">{t('email')}</Label>
                   <Input
                     id="email"
                     type="email"
                     value={form.email}
                     onChange={e => updateField('email', e.target.value)}
                     placeholder="nome@email.com"
-                    className={`mt-1 ${errors.email ? 'border-red-500' : ''}`}
+                    className="mt-1"
                   />
                   {errors.email && <p className="text-xs text-red-500 mt-1">{errors.email}</p>}
                 </div>
 
                 {/* First Name */}
                 <div>
-                  <Label htmlFor="firstName">{t('firstName')} <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="firstName">{t('firstName')}</Label>
                   <Input
                     id="firstName"
                     value={form.firstName}
                     onChange={e => updateField('firstName', e.target.value)}
-                    className={`mt-1 ${errors.firstName ? 'border-red-500' : ''}`}
+                    className="mt-1"
                   />
                   {errors.firstName && <p className="text-xs text-red-500 mt-1">{errors.firstName}</p>}
                 </div>
 
                 {/* Last Name */}
                 <div>
-                  <Label htmlFor="lastName">{t('lastName')} <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="lastName">{t('lastName')}</Label>
                   <Input
                     id="lastName"
                     value={form.lastName}
                     onChange={e => updateField('lastName', e.target.value)}
-                    className={`mt-1 ${errors.lastName ? 'border-red-500' : ''}`}
+                    className="mt-1"
                   />
                   {errors.lastName && <p className="text-xs text-red-500 mt-1">{errors.lastName}</p>}
                 </div>
@@ -467,37 +460,37 @@ export default function CheckoutPage() {
 
                 {/* Address */}
                 <div className="sm:col-span-2">
-                  <Label htmlFor="address">{t('address')} <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="address">{t('address')}</Label>
                   <Input
                     id="address"
                     value={form.address}
                     onChange={e => updateField('address', e.target.value)}
                     placeholder="Rua, número, andar"
-                    className={`mt-1 ${errors.address ? 'border-red-500' : ''}`}
+                    className="mt-1"
                   />
                   {errors.address && <p className="text-xs text-red-500 mt-1">{errors.address}</p>}
                 </div>
 
                 {/* City */}
                 <div>
-                  <Label htmlFor="city">{t('city')} <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="city">{t('city')}</Label>
                   <Input
                     id="city"
                     value={form.city}
                     onChange={e => updateField('city', e.target.value)}
-                    className={`mt-1 ${errors.city ? 'border-red-500' : ''}`}
+                    className="mt-1"
                   />
                   {errors.city && <p className="text-xs text-red-500 mt-1">{errors.city}</p>}
                 </div>
 
                 {/* Postal Code */}
                 <div>
-                  <Label htmlFor="postalCode">{t('postalCode')} <span className="text-red-500">*</span></Label>
+                  <Label htmlFor="postalCode">{t('postalCode')}</Label>
                   <Input
                     id="postalCode"
                     value={form.postalCode}
                     onChange={e => updateField('postalCode', e.target.value)}
-                    className={`mt-1 ${errors.postalCode ? 'border-red-500' : ''}`}
+                    className="mt-1"
                   />
                   {errors.postalCode && <p className="text-xs text-red-500 mt-1">{errors.postalCode}</p>}
                 </div>
@@ -506,13 +499,13 @@ export default function CheckoutPage() {
                 <div className="sm:col-span-2">
                   <Label className="flex items-center gap-1.5">
                     <Globe className="h-3.5 w-3.5 text-muted-foreground" />
-                    {t('countryLbl')} <span className="text-red-500">*</span>
+                    {t('countryLbl')}
                   </Label>
                   <Select
                     value={form.country}
                     onValueChange={(val) => updateField('country', val)}
                   >
-                    <SelectTrigger className={`mt-1 ${errors.country ? 'border-red-500' : ''}`}>
+                    <SelectTrigger className="mt-1">
                       <SelectValue placeholder={t('selectCountry')} />
                     </SelectTrigger>
                     <SelectContent>
