@@ -30,10 +30,11 @@ export default function HeroBanner() {
 
   useEffect(() => {
     if (!emblaApi) return;
-    onSelect();
-    emblaApi.on('select', onSelect);
-    return () => { emblaApi.off('select', onSelect); };
-  }, [emblaApi, onSelect]);
+    const handler = () => setSelectedIndex(emblaApi.selectedScrollSnap());
+    handler();
+    emblaApi.on('select', handler);
+    return () => { emblaApi.off('select', handler); };
+  }, [emblaApi]);
 
   const scrollTo = useCallback((index: number) => {
     emblaApi?.scrollTo(index);

@@ -66,17 +66,15 @@ export default function ProductDetail() {
   const relatedProducts = MOCK_PRODUCTS.filter(p => relatedProductIds.includes(p.id) && p.id !== product.id).slice(0, 5);
 
   const handleAdd = () => {
-    for (let i = 0; i < quantity; i++) {
-      addItem({
-        productId: product.id,
-        slug: product.slug,
-        name,
-        image: '',
-        price: product.price,
-        originalPrice: product.originalPrice,
-        stockCount: product.stockCount,
-      });
-    }
+    addItem({
+      productId: product.id,
+      slug: product.slug,
+      name,
+      image: '',
+      price: product.price,
+      originalPrice: product.originalPrice,
+      stockCount: product.stockCount,
+    }, quantity);
   };
 
   const stockLabel = product.stockCount > 10
