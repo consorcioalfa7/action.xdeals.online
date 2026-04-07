@@ -1,179 +1,122 @@
 'use client';
 
-import { Facebook, Instagram, Youtube, Linkedin, Mail, Smartphone } from 'lucide-react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { COUNTRIES, FOOTER_LINKS, CURRENCY_SYMBOLS } from '@/lib/constants';
-import { useLocaleStore } from '@/lib/store';
-import { useState } from 'react';
-
-const SOCIAL_LINKS = [
-  { icon: Facebook, label: 'Facebook', url: 'https://facebook.com/actionstores' },
-  { icon: Instagram, label: 'Instagram', url: 'https://instagram.com/actionstores' },
-  { icon: Youtube, label: 'YouTube', url: 'https://youtube.com/actionstores' },
-  { icon: Linkedin, label: 'LinkedIn', url: 'https://linkedin.com/company/action-stores' },
-];
+import { useLocaleStore, useNavStore } from '@/lib/store';
+import { Facebook, Instagram, Youtube, Twitter, ShieldCheck, CreditCard, Truck, RefreshCcw, Heart } from 'lucide-react';
 
 export default function Footer() {
   const locale = useLocaleStore(s => s.country.locale);
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
-
-  const sobre = FOOTER_LINKS.sobre[locale] || FOOTER_LINKS.sobre['pt-PT'];
-  const ajuda = FOOTER_LINKS.ajuda[locale] || FOOTER_LINKS.ajuda['pt-PT'];
-  const servicos = FOOTER_LINKS.servicos[locale] || FOOTER_LINKS.servicos['pt-PT'];
-
-  const colTitles: Record<string, Record<string, string>> = {
-    sobre: { "pt-PT": "Sobre a Action", "fr-FR": "À propos d'Action", "es-ES": "Sobre Action", "it-IT": "Chi è Action", "nl-NL": "Over Action", "de-DE": "Über Action", "fr-BE": "À propos", "lb-LU": "Iwwer Action", "pt-BR": "Sobre a Action" },
-    ajuda: { "pt-PT": "Ajuda & Contacto", "fr-FR": "Aide & Contact", "es-ES": "Ayuda & Contacto", "it-IT": "Aiuto & Contatti", "nl-NL": "Hulp & Contact", "de-DE": "Hilfe & Kontakt", "fr-BE": "Aide & Contact", "lb-LU": "Hëllef & Kontakt", "pt-BR": "Ajuda & Contato" },
-    servicos: { "pt-PT": "Serviços", "fr-FR": "Services", "es-ES": "Servicios", "it-IT": "Servizi", "nl-NL": "Diensten", "de-DE": "Dienstleistungen", "fr-BE": "Services", "lb-LU": "Servicer", "pt-BR": "Serviços" },
-    paises: { "pt-PT": "Países", "fr-FR": "Pays", "es-ES": "Países", "it-IT": "Paesi", "nl-NL": "Landen", "de-DE": "Länder", "fr-BE": "Pays", "lb-LU": "Länner", "pt-BR": "Países" },
-    newsletter: { "pt-PT": "Newsletter", "fr-FR": "Newsletter", "es-ES": "Boletín", "it-IT": "Newsletter", "nl-NL": "Nieuwsbrief", "de-DE": "Newsletter", "fr-BE": "Newsletter", "lb-LU": "Newsletter", "pt-BR": "Newsletter" },
-    nlPlaceholder: { "pt-PT": "O seu email...", "fr-FR": "Votre email...", "es-ES": "Tu email...", "it-IT": "La tua email...", "nl-NL": "Uw e-mail...", "de-DE": "Ihre E-Mail...", "fr-BE": "Votre email...", "lb-LU": "Är Email...", "pt-BR": "Seu email..." },
-    nlButton: { "pt-PT": "Subscrever", "fr-FR": "S'abonner", "es-ES": "Suscribirse", "it-IT": "Iscriversi", "nl-NL": "Aanmelden", "de-DE": "Anmelden", "fr-BE": "S'abonner", "lb-LU": "Abonnéieren", "pt-BR": "Inscrever-se" },
-    nlSuccess: { "pt-PT": "Subscrito com sucesso!", "fr-FR": "Inscrit avec succès!", "es-ES": "¡Suscrito con éxito!", "it-IT": "Iscritto con successo!", "nl-NL": "Succesvol aangemeld!", "de-DE": "Erfolgreich angemeldet!", "fr-BE": "Inscrit!", "lb-LU": "Erfollegrich abonnéiert!", "pt-BR": "Inscrito com sucesso!" },
-    downloadApp: { "pt-PT": "Baixe a nossa App", "fr-FR": "Téléchargez notre App", "es-ES": "Descarga nuestra App", "it-IT": "Scarica la nostra App", "nl-NL": "Download onze App", "de-DE": "Laden Sie unsere App herunter", "fr-BE": "Téléchargez notre App", "lb-LU": "Luet eis App erof", "pt-BR": "Baixe nosso App" },
-  };
-
-  const t = (key: string) => colTitles[key]?.[locale] || colTitles[key]?.['pt-PT'] || key;
+  const navigate = useNavStore(s => s.navigate);
 
   return (
-    <footer className="bg-gray-900 text-white mt-auto">
-      {/* Main Footer */}
-      <div className="container mx-auto px-4 py-10">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
-          {/* Sobre */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">{t('sobre')}</h3>
-            <ul className="space-y-2">
-              {sobre.map((link, i) => (
-                <li key={i}>
-                  <a href="#" className="text-sm text-gray-400 hover:text-white transition-colors">{link}</a>
-                </li>
-              ))}
-            </ul>
+    <footer className="bg-gray-900 text-white pt-20 pb-10 mt-auto">
+      <div className="container mx-auto px-4">
+        {/* Features */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-primary shrink-0">
+              <Truck className="h-6 w-6" />
+            </div>
+            <div>
+              <h4 className="font-black text-lg mb-1">Entrega Rápida</h4>
+              <p className="text-sm text-gray-400">Receba em sua casa em até 7 dias úteis.</p>
+            </div>
           </div>
-
-          {/* Ajuda */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">{t('ajuda')}</h3>
-            <ul className="space-y-2">
-              {ajuda.map((link, i) => (
-                <li key={i}>
-                  <a href="#" className="text-sm text-gray-400 hover:text-white transition-colors">{link}</a>
-                </li>
-              ))}
-            </ul>
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-primary shrink-0">
+              <ShieldCheck className="h-6 w-6" />
+            </div>
+            <div>
+              <h4 className="font-black text-lg mb-1">Pagamento Seguro</h4>
+              <p className="text-sm text-gray-400">Processado pela NeXFlowX com encriptação total.</p>
+            </div>
           </div>
-
-          {/* Serviços */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">{t('servicos')}</h3>
-            <ul className="space-y-2">
-              {servicos.map((link, i) => (
-                <li key={i}>
-                  <a href="#" className="text-sm text-gray-400 hover:text-white transition-colors">{link}</a>
-                </li>
-              ))}
-            </ul>
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-primary shrink-0">
+              <RefreshCcw className="h-6 w-6" />
+            </div>
+            <div>
+              <h4 className="font-black text-lg mb-1">Devolução Fácil</h4>
+              <p className="text-sm text-gray-400">14 dias para devolver se não estiver satisfeito.</p>
+            </div>
           </div>
+          <div className="flex items-start gap-4">
+            <div className="h-12 w-12 rounded-2xl bg-white/5 flex items-center justify-center text-primary shrink-0">
+              <Heart className="h-6 w-6" />
+            </div>
+            <div>
+              <h4 className="font-black text-lg mb-1">Apoio ao Cliente</h4>
+              <p className="text-sm text-gray-400">Estamos aqui para ajudar em todas as etapas.</p>
+            </div>
+          </div>
+        </div>
 
-          {/* Newsletter */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">{t('newsletter')}</h3>
-            <p className="text-sm text-gray-400 mb-3">
-              {locale === 'pt-PT' ? 'Receba as melhores ofertas no seu email' : locale === 'fr-FR' ? 'Recevez les meilleures offres par email' : locale === 'de-DE' ? 'Erhalten Sie die besten Angebote per E-Mail' : locale === 'nl-NL' ? 'Ontvang de beste aanbiedingen per e-mail' : 'Receive the best deals by email'}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20 border-t border-white/5 pt-20">
+          <div className="space-y-6">
+            <span className="text-3xl font-black tracking-tighter text-white">
+              ACTION<span className="text-primary">.</span>
+            </span>
+            <p className="text-gray-400 text-sm leading-relaxed max-w-xs">
+              A sua loja favorita de preços baixos, agora online com a melhor experiência de compra e pagamentos seguros.
             </p>
-            {subscribed ? (
-              <p className="text-sm text-green-400 font-medium">✓ {t('nlSuccess')}</p>
-            ) : (
-              <div className="flex gap-1">
-                <Input
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  placeholder={t('nlPlaceholder')}
-                  className="bg-gray-800 border-gray-700 text-white text-sm h-9"
-                  onKeyDown={e => { if (e.key === 'Enter' && email) { setSubscribed(true); setEmail(''); } }}
-                />
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-white h-9 px-3" onClick={() => { if (email) { setSubscribed(true); setEmail(''); } }}>
-                  <Mail className="h-4 w-4" />
-                </Button>
-              </div>
-            )}
-          </div>
-
-          {/* Países */}
-          <div>
-            <h3 className="font-semibold text-sm mb-4">{t('paises')}</h3>
-            <div className="flex flex-wrap gap-1.5">
-              {COUNTRIES.filter(c => c.isActive).map(c => (
-                <span key={c.id} className="text-sm text-gray-400 cursor-default" title={c.name}>{c.flag}</span>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <Separator className="my-8 bg-gray-700" />
-
-        {/* App Download + Social */}
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-          <div>
-            <h4 className="font-semibold text-sm mb-3">{t('downloadApp')}</h4>
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-700 transition-colors">
-                <Smartphone className="h-5 w-5" />
-                <div>
-                  <p className="text-[10px] text-gray-400 leading-none">Disponível no</p>
-                  <p className="text-xs font-medium">Google Play</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2 bg-gray-800 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-700 transition-colors">
-                <Smartphone className="h-5 w-5" />
-                <div>
-                  <p className="text-[10px] text-gray-400 leading-none">Download na</p>
-                  <p className="text-xs font-medium">App Store</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3">
-            {SOCIAL_LINKS.map(({ icon: Icon, label, url }) => (
-              <a
-                key={label}
-                href={url}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={label}
-                className="h-9 w-9 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors"
-              >
-                <Icon className="h-4 w-4" />
+            <div className="flex gap-4">
+              <a href="#" className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors">
+                <Facebook className="h-5 w-5" />
               </a>
-            ))}
+              <a href="#" className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors">
+                <Instagram className="h-5 w-5" />
+              </a>
+              <a href="#" className="h-10 w-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-primary transition-colors">
+                <Youtube className="h-5 w-5" />
+              </a>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-black text-lg mb-6 uppercase tracking-widest text-primary">Links Úteis</h4>
+            <ul className="space-y-4 text-sm text-gray-400">
+              <li><button onClick={() => navigate('home')} className="hover:text-white transition-colors">Página Inicial</button></li>
+              <li><button onClick={() => navigate('weekly')} className="hover:text-white transition-colors">Ofertas da Semana</button></li>
+              <li><a href="#" className="hover:text-white transition-colors">Sobre Nós</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Lojas Físicas</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Carreiras</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-black text-lg mb-6 uppercase tracking-widest text-primary">Ajuda</h4>
+            <ul className="space-y-4 text-sm text-gray-400">
+              <li><a href="#" className="hover:text-white transition-colors">Perguntas Frequentes</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Termos e Condições</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Política de Privacidade</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Cookies</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Livro de Reclamações</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="font-black text-lg mb-6 uppercase tracking-widest text-primary">Pagamento Seguro</h4>
+            <div className="space-y-6">
+              <p className="text-sm text-gray-400">Aceitamos todos os principais métodos de pagamento através da plataforma NeXFlowX.</p>
+              <div className="flex flex-wrap gap-3">
+                <div className="h-8 w-12 bg-white/10 rounded-md flex items-center justify-center border border-white/10">
+                  <CreditCard className="h-4 w-4 text-white/60" />
+                </div>
+                <div className="px-3 h-8 bg-white/10 rounded-md flex items-center justify-center border border-white/10 text-[10px] font-bold">MBWAY</div>
+                <div className="px-3 h-8 bg-white/10 rounded-md flex items-center justify-center border border-white/10 text-[10px] font-bold">APPLE PAY</div>
+                <div className="px-3 h-8 bg-white/10 rounded-md flex items-center justify-center border border-white/10 text-[10px] font-bold">VISA</div>
+                <div className="px-3 h-8 bg-white/10 rounded-md flex items-center justify-center border border-white/10 text-[10px] font-bold">MASTERCARD</div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-gray-800">
-        <div className="container mx-auto px-4 py-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div className="border-t border-white/5 pt-10 flex flex-col md:flex-row justify-between items-center gap-6">
           <p className="text-xs text-gray-500">
-            © {new Date().getFullYear()} Action. {locale === 'pt-PT' ? 'Todos os direitos reservados.' : locale === 'fr-FR' ? 'Tous droits réservés.' : locale === 'de-DE' ? 'Alle Rechte vorbehalten.' : locale === 'nl-NL' ? 'Alle rechten voorbehouden.' : 'All rights reserved.'}
+            © {new Date().getFullYear()} Action. Todos os direitos reservados.
           </p>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1 bg-gray-800 rounded px-2 py-1">
-              <span className="text-[10px] font-bold text-gray-400">VISA</span>
-            </div>
-            <div className="flex items-center gap-1 bg-gray-800 rounded px-2 py-1">
-              <span className="text-[10px] font-bold text-gray-400">MC</span>
-            </div>
-            <div className="flex items-center gap-1 bg-gray-800 rounded px-2 py-1">
-              <span className="text-[10px] font-bold text-gray-400">MB WAY</span>
-            </div>
-            <div className="flex items-center gap-1 bg-gray-800 rounded px-2 py-1">
-              <span className="text-[10px] font-bold text-gray-400">PAYPAL</span>
-            </div>
+          <div className="flex items-center gap-2 text-xs text-gray-500">
+            <ShieldCheck className="h-4 w-4 text-primary" />
+            <span>Pagamentos orquestrados por <strong>NeXFlowX</strong></span>
           </div>
         </div>
       </div>

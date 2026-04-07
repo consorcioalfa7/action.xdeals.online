@@ -5,6 +5,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ProductGrid from '../products/ProductGrid';
 import { useLocaleStore } from '@/lib/store';
 import { MOCK_PRODUCTS } from '@/lib/mock-data';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Star, Zap, TrendingUp } from 'lucide-react';
 
 export default function ProductHighlights() {
   const locale = useLocaleStore(s => s.country.locale);
@@ -15,55 +17,60 @@ export default function ProductHighlights() {
   const bestSellers = MOCK_PRODUCTS.filter(p => !p.isOnSale).slice(0, 8);
 
   const titles: Record<string, Record<string, string>> = {
-    section: { "pt-PT": "Destaques", "fr-FR": "En vedette", "es-ES": "Destacados", "it-IT": "In evidenza", "nl-NL": "In de schijnwerpers", "de-DE": "Highlights", "fr-BE": "En vedette", "lb-LU": "Highlights", "pt-BR": "Destaques" },
-    featured: { "pt-PT": "Em Destaque", "fr-FR": "En vedette", "es-ES": "Destacados", "it-IT": "In evidenza", "nl-NL": "Uitgelicht", "de-DE": "Empfohlen", "fr-BE": "En vedette", "lb-LU": "Highlights", "pt-BR": "Em Destaque" },
-    new: { "pt-PT": "Novidades", "fr-FR": "Nouveautés", "es-ES": "Novedades", "it-IT": "Novità", "nl-NL": "Nieuw", "de-DE": "Neuheiten", "fr-BE": "Nouveautés", "lb-LU": "Neiegkeeten", "pt-BR": "Novidades" },
-    best: { "pt-PT": "Mais Vendidos", "fr-FR": "Meilleures ventes", "es-ES": "Más vendidos", "it-IT": "Più venduti", "nl-NL": "Bestsellers", "de-DE": "Bestseller", "fr-BE": "Meilleures ventes", "lb-LU": "Bestseller", "pt-BR": "Mais Vendidos" },
+    section: { "pt-PT": "Destaques", "pt-BR": "Destaques" },
+    featured: { "pt-PT": "Em Destaque", "pt-BR": "Em Destaque" },
+    new: { "pt-PT": "Novidades", "pt-BR": "Novidades" },
+    best: { "pt-PT": "Mais Vendidos", "pt-BR": "Mais Vendidos" },
   };
 
   const t = (key: string) => titles[key]?.[locale] || titles[key]?.['pt-PT'] || key;
 
   return (
-    <section className="py-8">
-      <Tabs value={tab} onValueChange={setTab}>
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl md:text-2xl font-bold">{t('section')}</h2>
-          <TabsList className="hidden sm:flex">
-            <TabsTrigger value="featured">{t('featured')}</TabsTrigger>
-            <TabsTrigger value="new">{t('new')}</TabsTrigger>
-            <TabsTrigger value="best">{t('best')}</TabsTrigger>
-          </TabsList>
+    <section className="py-16">
+      <div className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-8">
+        <div className="space-y-2">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/5 text-primary text-[10px] font-black uppercase tracking-widest">
+            <Star className="h-3 w-3 fill-current" />
+            Curadoria Especial
+          </div>
+          <h2 className="text-4xl font-black text-gray-900">{t('section')}</h2>
         </div>
 
-        {/* Mobile tabs */}
-        <div className="flex sm:hidden gap-2 mb-4 overflow-x-auto">
+        <div className="flex gap-2 p-1.5 bg-gray-100 rounded-[1.25rem] self-start md:self-auto">
           {[
-            { value: 'featured', label: t('featured') },
-            { value: 'new', label: t('new') },
-            { value: 'best', label: t('best') },
-          ].map(item => (
+            { id: 'featured', label: t('featured'), icon: Star },
+            { id: 'new', label: t('new'), icon: Zap },
+            { id: 'best', label: t('best'), icon: TrendingUp },
+          ].map((item) => (
             <button
-              key={item.value}
-              onClick={() => setTab(item.value)}
-              className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
-                tab === item.value ? 'bg-primary text-white' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              key={item.id}
+              onClick={() => setTab(item.id)}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black transition-all ${
+                tab === item.id 
+                  ? 'bg-white text-gray-900 shadow-sm' 
+                  : 'text-gray-500 hover:text-gray-900'
               }`}
             >
+              <item.icon className={`h-4 w-4 ${tab === item.id ? 'text-primary' : 'text-gray-400'}`} />
               {item.label}
             </button>
           ))}
         </div>
+      </div>
 
-        <TabsContent value="featured">
-          <ProductGrid products={featured} />
-        </TabsContent>
-        <TabsContent value="new">
-          <ProductGrid products={newest} />
-        </TabsContent>
-        <TabsContent value="best">
-          <ProductGrid products={bestSellers} />
-        </TabsContent>
-      </Tabs>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -20 }}
+          transition={{ duration: 0.4 }}
+        >
+          {tab === 'featured' && <ProductGrid products={featured} />}
+          {tab === 'new' && <ProductGrid products={newest} />}
+          {tab === 'best' && <ProductGrid products={bestSellers} />}
+        </motion.div>
+      </AnimatePresence>
     </section>
   );
 }
