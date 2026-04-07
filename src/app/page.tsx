@@ -27,6 +27,9 @@ import SearchResults from '@/components/products/SearchResults';
 import CartDrawer from '@/components/cart/CartDrawer';
 import CheckoutPage from '@/components/checkout/CheckoutPage';
 
+// Demo
+import DemoCheckout from '@/components/demo/DemoCheckout';
+
 // Chat
 import AIChatWidget from '@/components/chat/AIChatWidget';
 
@@ -102,6 +105,12 @@ export default function Home() {
 
           {currentView === 'checkout' && (
             <CheckoutPage />
+          )}
+
+          {currentView === 'demo' && (
+            <div className="page-transition">
+              <DemoCheckout />
+            </div>
           )}
         </div>
       </main>

@@ -121,7 +121,7 @@ export const useLocaleStore = create<LocaleState>()(
 
 // ── Navigation Store ──────────────────────────────────────────
 interface NavState {
-  currentView: "home" | "category" | "product" | "cart" | "checkout" | "search" | "weekly";
+  currentView: "home" | "category" | "product" | "cart" | "checkout" | "search" | "weekly" | "demo";
   categorySlug?: string;
   productSlug?: string;
   searchQuery?: string;

@@ -143,6 +143,16 @@ export default function Header() {
               
               <div className="w-px h-4 bg-gray-200 mx-2" />
               
+              <button
+                onClick={() => navigate('demo')}
+                className="flex items-center gap-2 px-4 py-2 text-xs font-black text-blue-600 uppercase tracking-wider hover:bg-blue-50 rounded-xl transition-all"
+              >
+                <CreditCard className="h-4 w-4" />
+                NeXFlowX Demo
+              </button>
+              
+              <div className="w-px h-4 bg-gray-200 mx-2" />
+              
               {CATEGORIES.slice(0, 8).map((cat) => (
                 <div
                   key={cat.slug}
